@@ -22,3 +22,15 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
 
     class Config:
         from_attributes = True
+
+@api_router.post(
+    "/admin/target",
+    response_model=ScrapeTargetPublic,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_admin_api_key)]
+)
+async def add_scrape_target(
+    target: ScrapeTargetCreate, 
+    db_session: AsyncSession = Depends(db.get_db)
+):pass
+    
