@@ -14,7 +14,21 @@ from .database import engine, Base
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    pass
+    """
+    Lifespan manager for the FastAPI app.
+    Handles startup and shutdown events.
+    """
+    print("Application startup...")
+    # Create database tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+app = FastAPI(
+    title="Price Comparison Scraper API",
+    version="1.0",
+    lifespan=lifespan
+)
+
 app = FastAPI(
     title="Price Comparison Scraper API",
     version="1.0",
