@@ -15,3 +15,10 @@ class ScrapeTargetCreate(BaseModel):
     name_selector: str
     price_selector: str
     url_selector: str
+
+class ScrapeTargetPublic(ScrapeTargetCreate):
+    id: int
+    created_at: str
+
+    class Config:
+        from_attributes = True
