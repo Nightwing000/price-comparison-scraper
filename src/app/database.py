@@ -52,3 +52,10 @@ class Product(Base):
     url: Mapped[str] = mapped_column(String(500), unique=True)
     source_site: Mapped[str] = mapped_column(String(100))
     scraped_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+#CRUD Operations
+async def create_scrape_target(db: AsyncSession, target: ScrapeTarget) -> ScrapeTarget:
+    db.add(target)
+    await db.commit()
+    await db.refresh(target)
+    return target
