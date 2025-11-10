@@ -8,3 +8,10 @@ from . import database as db
 from .core import settings
 
 api_router = APIRouter()
+
+class ScrapeTargetCreate(BaseModel):
+    name: str
+    base_url: str
+    name_selector: str
+    price_selector: str
+    url_selector: str
