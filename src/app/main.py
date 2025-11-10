@@ -29,6 +29,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app = FastAPI(
+    title="Price Comparison Scraper API",
+    version="1.0",
+    lifespan=lifespan
+)
+
+# Include the main API router
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/", tags=["Root"])
 async def read_root():
@@ -44,7 +52,3 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=422,
         content={"detail": "Validation Error", "errors": exc.errors()},
     )
-
-if __name__ == "__main__":
-    # This is for running the app directly (e.g., for debugging)
-    uvicorn.run("src.app.main:app", host="127.0.0.1", port=8000, reload=True)
