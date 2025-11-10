@@ -38,4 +38,17 @@ class ScrapeTarget(Base):
     name_selector: Mapped[str] = mapped_column(String(255))
     price_selector: Mapped[str] = mapped_column(String(255))
     url_selector: Mapped[str] = mapped_column(String(255))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())  
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+class Product(Base):
+    """
+    Model for a scraped product.
+    """
+    __tablename__ = "products"
+    
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), index=True)
+    price: Mapped[float] = mapped_column(Float)
+    url: Mapped[str] = mapped_column(String(500), unique=True)
+    source_site: Mapped[str] = mapped_column(String(100))
+    scraped_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
