@@ -25,3 +25,17 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
+class ScrapeTarget(Base):
+    """
+    Model for a website target to be scraped.
+    """
+    __tablename__ = "scrape_targets"
+    
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    base_url: Mapped[str] = mapped_column(String(255))
+    name_selector: Mapped[str] = mapped_column(String(255))
+    price_selector: Mapped[str] = mapped_column(String(255))
+    url_selector: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())  
