@@ -59,3 +59,7 @@ async def create_scrape_target(db: AsyncSession, target: ScrapeTarget) -> Scrape
     await db.commit()
     await db.refresh(target)
     return target
+
+async def get_all_scrape_targets(db: AsyncSession) -> List[ScrapeTarget]:
+    result = await db.execute(select(ScrapeTarget))
+    return list(result.scalars().all())
