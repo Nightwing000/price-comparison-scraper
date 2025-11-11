@@ -42,3 +42,11 @@ def mock_target() -> ScrapeTarget:
         url_selector="a.product-link"
     )
 
+def test_clean_price():
+    """Test the price cleaning utility function."""
+    service = ScraperService(ScrapeTarget()) # Doesn't need a real target
+    
+    assert service._clean_price("$19.99") == 19.99
+    assert service._clean_price("€25,00") == 25.00
+    assert service._clean_price("Free") == 0.0
+    assert service._clean_price("1,200.50 USD") == 1200.50
