@@ -77,3 +77,10 @@ async def upsert_product(db: AsyncSession, product_data: dict):
         existing_product.name = product_data['name']
         existing_product.price = product_data['price']
         existing_product.scraped_at = func.now()
+
+    else:
+        # Create new
+        new_product = Product(**product_data)
+        db.add(new_product)
+    
+    await db.commit()
