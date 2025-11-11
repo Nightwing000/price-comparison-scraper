@@ -58,3 +58,24 @@ def test_clean_url(mock_target: ScrapeTarget):
     assert service._clean_url("/product/123") == "http://mockstore.com/product/123"
     assert service._clean_url("http://external.com/product/456") == "http://external.com/product/456"
     assert service._clean_url("page2.html") == "page2.html"
+
+def test_parser_extracts_data(mock_target: ScrapeTarget):
+    """
+    Test that the parser correctly extracts data from mock HTML.
+    """
+    service = ScraperService(mock_target)
+    products = service.parse_html(MOCK_HTML)
+    
+    # It should find 2 products, as the 3rd is missing a price
+    assert len(products) == 2
+    
+    # Check Product 1
+    assert products[0]['name'] == "Product 1"
+    assert products[0]['price'] == 19.99
+    assert products[0]['url'] == "http://mockstore.com/product/1" # Test URL cleaning
+    assert products[0]['source_site'] == "Mock Store"
+    
+    # Check Product 2
+    assert products[1]['name'] == "Product 2"
+    assert products[1]['price'] == 25.00 # Test price cleaning
+    assert products[1]['url'] == "http://mockstore.com/product/2"
