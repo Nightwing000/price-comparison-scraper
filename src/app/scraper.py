@@ -39,4 +39,29 @@ async def run_all_scrapes(db_session: AsyncSession):
     The main job function.
     Fetches all targets, scrapes them, and logs the result.
     """
-    pass
+    targets = await db.get_all_scrape_targets(db_session)
+    for target in targets:
+        print(f"Scraping {target.name}...")
+        service = ScraperService(target)
+        html = await service.fetch_html()
+        
+        if not html:
+            log = ScrapeLog(
+                target_name=target.name,
+                status="failed",
+                error_message="Failed to fetch HTML."
+            )
+            await db.create_scrape_log(db_session, log)
+            continue
+
+        products = service.parse_html(html)
+        
+        if not products:
+            log = ScrapeLog(
+                target_name=target.name,
+                status="success",
+                products_found=0,
+                error_message="HTML fetched but no products parsed."
+            )
+            await db.create_scrape_log(db_session, log)
+            continue
