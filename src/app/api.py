@@ -52,4 +52,12 @@ async def add_scrape_target(
         **new_target.__dict__,
         created_at=new_target.created_at.isoformat()
     )
-    
+
+# --- Pydantic Schemas (for API request/response) ---
+
+# Product Schemas
+class ProductBase(BaseModel):
+    name: str
+    price: float
+    url: str
+    source_site: str
