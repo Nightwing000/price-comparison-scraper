@@ -63,3 +63,9 @@ async def create_scrape_target(db: AsyncSession, target: ScrapeTarget) -> Scrape
 async def get_all_scrape_targets(db: AsyncSession) -> List[ScrapeTarget]:
     result = await db.execute(select(ScrapeTarget))
     return list(result.scalars().all())
+
+async def upsert_product(db: AsyncSession, product_data: dict):
+    """
+    Create a new product or update it if it already exists (based on URL).
+    """
+    pass
