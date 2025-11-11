@@ -6,9 +6,9 @@ name: Python CI/CD Pipeline
 # Triggers the workflow on pushes to main and all pull requests
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   # --- 1. BUILD Job ---

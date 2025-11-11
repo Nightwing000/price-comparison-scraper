@@ -79,3 +79,42 @@ async def run_all_scrapes(db_session: AsyncSession):
         )
         await db.create_scrape_log(db_session, log)
         print(f"Successfully scraped {target.name}, found {len(products)} products.")
+    def _clean_url(self, url: str) -> str:
+        """Utility to make a relative URL absolute."""
+        if url.startswith('/'):
+            # Create a base URL like "http://example.com"
+            base = self.target.base_url.split('/')
+            return f"{base[0]}//{base[2]}{url}"
+        return url
+
+    def parse_html(self, html: str) -> list[dict]:
+
+        """Parse the HTML to find product data based on selectors."""
+        soup = BeautifulSoup(html, 'html.parser')
+        products_found = []
+
+        # This logic assumes selectors point to containers.
+        # A more robust parser would find all names, all prices, etc.
+        # and try to align them.
+        # For this project, we assume a simple structure
+        # where we can find all elements of each type.
+        
+        try:
+            names = [el.get_text(strip=True) for el in soup.select(self.target.name_selector)]
+            prices = [self._clean_price(el.get_text(strip=True)) for el in soup.select(self.target.price_selector)]
+            urls = [self._clean_url(el['href']) for el in soup.select(self.target.url_selector)]
+
+            # Combine the lists, assuming they are in order
+            for i in range(min(len(names), len(prices), len(urls))):
+                products_found.append({
+                    "name": names[i],
+                    "price": prices[i],
+                    "url": urls[i],
+                    "source_site": self.target.name
+                })
+            
+            return products_found
+        
+        except Exception as e:
+            print(f"Error parsing HTML for {self.target.name}: {e}")
+            return []
