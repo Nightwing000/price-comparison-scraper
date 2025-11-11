@@ -68,4 +68,6 @@ async def upsert_product(db: AsyncSession, product_data: dict):
     """
     Create a new product or update it if it already exists (based on URL).
     """
-    pass
+    stmt = select(Product).where(Product.url == product_data['url'])
+    result = await db.execute(stmt)
+    existing_product = result.scalars().first()
