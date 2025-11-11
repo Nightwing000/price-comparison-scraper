@@ -24,3 +24,12 @@ class ScraperService:
             return None
         finally:
             await self.client.aclose()
+
+    def _clean_price(self, price_str: str) -> float:
+        """Utility to convert a price string to a float."""
+        try:
+            # Remove symbols like $, €, ,, etc.
+            cleaned = "".join(c for c in price_str if c.isdigit() or c == '.')
+            return float(cleaned)
+        except ValueError:
+            return 0.0
