@@ -32,5 +32,16 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
 async def add_scrape_target(
     target: ScrapeTargetCreate, 
     db_session: AsyncSession = Depends(db.get_db)
-):pass
+):
+    """
+    Add a new website target for scraping.
+    Requires a valid admin API key.
+    """
+    db_target = db.ScrapeTarget(**target.model_dump())
+    new_target = await db.create_scrape_target(db_session, db_target)
+    
+    return ScrapeTargetPublic(
+        **new_target.__dict__,
+        created_at=new_target.created_at.isoformat()
+    )
     
