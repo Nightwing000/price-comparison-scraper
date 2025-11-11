@@ -10,6 +10,10 @@ from .core import settings
 api_router = APIRouter()
 
 class ScrapeTargetCreate(BaseModel):
+    """
+    Schema for creating a new scrape target.
+    Defines CSS selectors used by the scraper to extract data from a website.
+    """
     name: str
     base_url: str
     name_selector: str
@@ -17,6 +21,10 @@ class ScrapeTargetCreate(BaseModel):
     url_selector: str
 
 class ScrapeTargetPublic(ScrapeTargetCreate):
+    """
+    Response schema for returning scrape target details to the client.
+    Extends ScrapeTargetCreate and includes database-generated fields.
+    """
     id: int
     created_at: str
 
