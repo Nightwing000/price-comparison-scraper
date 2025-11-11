@@ -82,3 +82,13 @@ async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db))
             scraped_at=product.scraped_at.isoformat()
         ) for product in products
     ]
+
+async def get_scrape_logs(db_session: AsyncSession = Depends(db.get_db)):
+    logs = await db.get_latest_scrape_logs(db_session, limit=10)
+    
+    return [
+        ScrapeLogPublic(
+            **log.__dict__,
+            created_at=log.created_at.isoformat()
+        ) for log in logs
+    ]
