@@ -70,4 +70,15 @@ class ProductPublic(ProductBase):
         from_attributes = True # ORM mode
 
 async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db)):
-    pass
+    if not q:
+        raise HTTPException(status_code=400, detail="Query parameter 'q' is required.")
+    
+    products = await db.search_products_by_name(db_session, q)
+    
+    # Convert datetime objects to ISO 8601 strings for JSON response
+    return [
+        ProductPublic(
+            **product.__dict__,
+            scraped_at=product.scraped_at.isoformat()
+        ) for product in products
+    ]
