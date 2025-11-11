@@ -68,3 +68,6 @@ class ProductPublic(ProductBase):
 
     class Config:
         from_attributes = True # ORM mode
+
+async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db)):
+    pass
