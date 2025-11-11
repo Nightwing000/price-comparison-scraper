@@ -55,3 +55,17 @@ async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
     async with TestingSessionLocal() as session:
         yield session
         await session.rollback() # Ensure clean state
+
+
+@pytest_asyncio.fixture(scope="function")
+async def api_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    """
+    Fixture for an async test client.
+    Overrides the `get_db` dependency to use the test session.
+    """
+    def override_get_db():
+        """Override get_db dependency."""
+        try:
+            yield db_session
+        finally:
+            pass
