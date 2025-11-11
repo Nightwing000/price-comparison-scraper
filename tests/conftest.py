@@ -2,11 +2,15 @@
 Pytest fixtures for testing.
 """
 
+import pytest
 import pytest_asyncio
+from typing import AsyncGenerator
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from src.app.main import app
-from src.app.database import Base
+from src.app.database import Base, get_db
+from src.app.core import settings
 
 # --- Test Database Setup ---
 # Use an in-memory SQLite database for testing
@@ -42,3 +46,12 @@ async def db_engine():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
+@pytest_asyncio.fixture(scope="function")
+async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """
+    Fixture for a test database session.
+    Rolls back any changes after each test.
+    """
+    async with TestingSessionLocal() as session:
+        yield session
+        await session.rollback() # Ensure clean state
