@@ -34,6 +34,51 @@ class ScraperService:
         except ValueError:
             return 0.0
         
+async def run_all_scrapes(db_session: AsyncSession):
+    """
+    The main job function.
+    Fetches all targets, scrapes them, and logs the result.
+    """
+    targets = await db.get_all_scrape_targets(db_session)
+    for target in targets:
+        print(f"Scraping {target.name}...")
+        service = ScraperService(target)
+        html = await service.fetch_html()
+        
+        if not html:
+            log = ScrapeLog(
+                target_name=target.name,
+                status="failed",
+                error_message="Failed to fetch HTML."
+            )
+            await db.create_scrape_log(db_session, log)
+            continue
+
+        products = service.parse_html(html)
+        
+        if not products:
+            log = ScrapeLog(
+                target_name=target.name,
+                status="success",
+                products_found=0,
+                error_message="HTML fetched but no products parsed."
+            )
+            await db.create_scrape_log(db_session, log)
+            continue
+        # If we found products, upsert them
+        for product_data in products:
+            try:
+                await db.upsert_product(db_session, product_data)
+            except Exception as e:
+                print(f"Error upserting product {product_data.get('url')}: {e}")
+        
+        log = ScrapeLog(
+            target_name=target.name,
+            status="success",
+            products_found=len(products)
+        )
+        await db.create_scrape_log(db_session, log)
+        print(f"Successfully scraped {target.name}, found {len(products)} products.")
     def _clean_url(self, url: str) -> str:
         """Utility to make a relative URL absolute."""
         if url.startswith('/'):
