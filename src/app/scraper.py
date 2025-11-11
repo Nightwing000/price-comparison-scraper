@@ -33,3 +33,10 @@ class ScraperService:
             return float(cleaned)
         except ValueError:
             return 0.0
+        
+async def run_all_scrapes(db_session: AsyncSession):
+    """
+    The main job function.
+    Fetches all targets, scrapes them, and logs the result.
+    """
+    pass
