@@ -33,3 +33,11 @@ class ScraperService:
             return float(cleaned)
         except ValueError:
             return 0.0
+        
+    def _clean_url(self, url: str) -> str:
+        """Utility to make a relative URL absolute."""
+        if url.startswith('/'):
+            # Create a base URL like "http://example.com"
+            base = self.target.base_url.split('/')
+            return f"{base[0]}//{base[2]}{url}"
+        return url
