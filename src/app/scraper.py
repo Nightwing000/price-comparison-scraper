@@ -41,3 +41,10 @@ class ScraperService:
             base = self.target.base_url.split('/')
             return f"{base[0]}//{base[2]}{url}"
         return url
+
+    def parse_html(self, html: str) -> list[dict]:
+
+        try:
+            pass
+        except:
+            pass
