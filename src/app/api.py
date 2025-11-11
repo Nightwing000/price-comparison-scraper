@@ -69,6 +69,19 @@ class ProductPublic(ProductBase):
     class Config:
         from_attributes = True # ORM mode
 
+# ScrapeLog Schemas
+class ScrapeLogPublic(BaseModel):
+    """Response schema for returning scrape log details."""
+    id: int
+    target_name: str
+    status: str
+    products_found: int
+    error_message: str | None
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
 async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db)):
     if not q:
         raise HTTPException(status_code=400, detail="Query parameter 'q' is required.")
