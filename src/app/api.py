@@ -61,3 +61,10 @@ class ProductBase(BaseModel):
     price: float
     url: str
     source_site: str
+
+class ProductPublic(ProductBase):
+    id: int
+    scraped_at: str # Use string for JSON compatibility
+
+    class Config:
+        from_attributes = True # ORM mode
