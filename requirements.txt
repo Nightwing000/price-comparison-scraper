@@ -8,11 +8,6 @@ python-dotenv
 # Use alembic for migrations in a real project
 # alembic
 
-# Scraping
-requests
-beautifulsoup4
-httpx
-
 # Scheduling
 apscheduler
 
@@ -27,3 +22,8 @@ pylint
 
 # Security
 bandit
+
+#Scraping
+requests
+beautifulsoup4
+httpx
