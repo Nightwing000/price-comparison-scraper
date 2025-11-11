@@ -50,3 +50,11 @@ def test_clean_price():
     assert service._clean_price("€25,00") == 25.00
     assert service._clean_price("Free") == 0.0
     assert service._clean_price("1,200.50 USD") == 1200.50
+
+def test_clean_url(mock_target: ScrapeTarget):
+    """Test the URL cleaning utility function."""
+    service = ScraperService(mock_target)
+    
+    assert service._clean_url("/product/123") == "http://mockstore.com/product/123"
+    assert service._clean_url("http://external.com/product/456") == "http://external.com/product/456"
+    assert service._clean_url("page2.html") == "page2.html"
