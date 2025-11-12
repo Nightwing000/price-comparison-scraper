@@ -20,6 +20,15 @@ async def get_client_api_key(key: str = Security(api_key_header)):
         detail="Invalid or missing client API key"
     )
 
+async def get_admin_api_key(key: str = Security(api_key_header)):
+    """Dependency to validate the admin API key."""
+    if key == settings.ADMIN_API_KEY:
+        return key
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or missing admin API key"
+    )
+
 class ScrapeTargetCreate(BaseModel):
     """
     Schema for creating a new scrape target.
