@@ -64,7 +64,31 @@ async def get_all_scrape_targets(db: AsyncSession) -> List[ScrapeTarget]:
     result = await db.execute(select(ScrapeTarget))
     return list(result.scalars().all())
 
+async def upsert_product(db: AsyncSession, product_data: dict):
+    """
+    Create a new product or update it if it already exists (based on URL).
+    """
+    stmt = select(Product).where(Product.url == product_data['url'])
+    result = await db.execute(stmt)
+    existing_product = result.scalars().first()
+
+    if existing_product:
+        # Update existing
+        existing_product.name = product_data['name']
+        existing_product.price = product_data['price']
+        existing_product.scraped_at = func.now()
+
+    else:
+        # Create new
+        new_product = Product(**product_data)
+        db.add(new_product)
+    
+    await db.commit()
+
 async def search_products_by_name(db: AsyncSession, query: str) -> List[Product]:
+    """
+    Search for products where the name contains the query string.
+    """
     stmt = select(Product).where(Product.name.ilike(f"%{query}%"))
     result = await db.execute(stmt)
     return list(result.scalars().all())
