@@ -36,3 +36,22 @@ async def async_scrape_job():
             print("Scheduler job: Scrapes completed.")
         except Exception as e:
             print(f"Scheduler job: FAILED with error: {e}")
+
+def start_scheduler():
+    """
+    Adds the job to the scheduler and starts it.
+    """
+    try:
+        # Add the job
+        scheduler.add_job(
+            async_scrape_job,
+            'interval',
+            minutes=settings.SCHEDULER_INTERVAL_MINUTES,
+            id='run_all_scrapes_job',
+            replace_existing=True
+        )
+        # Start the scheduler
+        if not scheduler.running:
+            scheduler.start()
+    except Exception as e:
+        print(f"Error starting scheduler: {e}")
