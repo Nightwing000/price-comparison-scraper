@@ -109,3 +109,9 @@ async def search_products_by_name(db: AsyncSession, query: str) -> List[Product]
     stmt = select(Product).where(Product.name.ilike(f"%{query}%"))
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+async def create_scrape_log(db: AsyncSession, log: ScrapeLog) -> ScrapeLog:
+    db.add(log)
+    await db.commit()
+    await db.refresh(log)
+    return log
