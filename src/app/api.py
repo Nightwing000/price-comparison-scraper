@@ -31,6 +31,17 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
     class Config:
         from_attributes = True
 
+class ScrapeLogPublic(BaseModel):
+    id: int
+    target_name: str
+    status: str
+    products_found: int
+    error_message: str | None
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
 @api_router.post(
     "/admin/target",
     response_model=ScrapeTargetPublic,
