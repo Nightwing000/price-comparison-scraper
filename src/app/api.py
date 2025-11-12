@@ -52,4 +52,56 @@ async def add_scrape_target(
         **new_target.__dict__,
         created_at=new_target.created_at.isoformat()
     )
+
+# --- Pydantic Schemas (for API request/response) ---
+
+# Product Schemas
+class ProductBase(BaseModel):
+    name: str
+    price: float
+    url: str
+    source_site: str
+
+class ProductPublic(ProductBase):
+    id: int
+    scraped_at: str # Use string for JSON compatibility
+
+    class Config:
+        from_attributes = True # ORM mode
+
+# ScrapeLog Schemas
+class ScrapeLogPublic(BaseModel):
+    """Response schema for returning scrape log details."""
+    id: int
+    target_name: str
+    status: str
+    products_found: int
+    error_message: str | None
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db)):
+    if not q:
+        raise HTTPException(status_code=400, detail="Query parameter 'q' is required.")
     
+    products = await db.search_products_by_name(db_session, q)
+    
+    # Convert datetime objects to ISO 8601 strings for JSON response
+    return [
+        ProductPublic(
+            **product.__dict__,
+            scraped_at=product.scraped_at.isoformat()
+        ) for product in products
+    ]
+
+async def get_scrape_logs(db_session: AsyncSession = Depends(db.get_db)):
+    logs = await db.get_latest_scrape_logs(db_session, limit=10)
+    
+    return [
+        ScrapeLogPublic(
+            **log.__dict__,
+            created_at=log.created_at.isoformat()
+        ) for log in logs
+    ]

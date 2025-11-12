@@ -84,3 +84,15 @@ async def upsert_product(db: AsyncSession, product_data: dict):
         db.add(new_product)
     
     await db.commit()
+
+async def search_products_by_name(db: AsyncSession, query: str) -> List[Product]:
+    """
+    Search for products where the name contains the query string.
+    """
+    stmt = select(Product).where(Product.name.ilike(f"%{query}%"))
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+async def search_products_by_name(db: AsyncSession, query: str) -> List[Product]:
+    stmt = select(Product).where(Product.name.ilike(f"%{query}%"))
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
