@@ -21,3 +21,5 @@ sync_db_url = settings.DATABASE_URL.replace(
 jobstores = {
     'default': SQLAlchemyJobStore(url=sync_db_url)
 }
+
+scheduler = AsyncIOScheduler(jobstores=jobstores)
