@@ -55,3 +55,10 @@ def start_scheduler():
             scheduler.start()
     except Exception as e:
         print(f"Error starting scheduler: {e}")
+
+async def shutdown_scheduler():
+    """
+    Shuts down the scheduler.
+    """
+    if scheduler.running:
+        scheduler.shutdown()
