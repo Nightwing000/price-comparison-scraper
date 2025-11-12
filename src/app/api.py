@@ -70,6 +70,7 @@ async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db))
 async def add_scrape_target(
     target: ScrapeTargetCreate, 
     db_session: AsyncSession = Depends(db.get_db)
+    
 ):
     """
     Add a new website target for scraping.
@@ -82,11 +83,22 @@ async def add_scrape_target(
         **new_target.__dict__,
         created_at=new_target.created_at.isoformat()
     )
+@api_router.get(
+    "/admin/logs",
+    response_model=List[ScrapeLogPublic],
+    dependencies=[Depends(get_admin_api_key)]
+)
+async def get_scrape_logs(db_session: AsyncSession = Depends(db.get_db)):
+    """
+    Get the 10 most recent scrape logs.
+    Requires a valid admin API key.
+    """
     
 @api_router.post(
     "/admin/trigger-scrape",
     status_code=status.HTTP_202_ACCEPTED,
-    
+    dependencies=[Depends(get_admin_api_key)]
+
 )
 
 async def trigger_manual_scrape(db_session: AsyncSession = Depends(db.get_db)):
