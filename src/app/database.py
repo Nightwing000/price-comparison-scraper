@@ -115,3 +115,8 @@ async def create_scrape_log(db: AsyncSession, log: ScrapeLog) -> ScrapeLog:
     await db.commit()
     await db.refresh(log)
     return log
+
+async def get_latest_scrape_logs(db: AsyncSession, limit: int = 10) -> List[ScrapeLog]:
+    stmt = select(ScrapeLog).order_by(ScrapeLog.created_at.desc()).limit(limit)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
