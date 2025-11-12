@@ -11,6 +11,15 @@ api_router = APIRouter()
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
+async def get_client_api_key(key: str = Security(api_key_header)):
+    """Dependency to validate the client API key."""
+    if key == settings.CLIENT_API_KEY:
+        return key
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or missing client API key"
+    )
+
 class ScrapeTargetCreate(BaseModel):
     """
     Schema for creating a new scrape target.
