@@ -50,7 +50,11 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
 
     class Config:
         from_attributes = True
-
+@api_router.get(
+    "/search",
+    response_model=List[ProductPublic],
+    dependencies=[Depends(get_client_api_key)]
+)
 @api_router.post(
     "/admin/target",
     response_model=ScrapeTargetPublic,
