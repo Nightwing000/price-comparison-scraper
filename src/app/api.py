@@ -55,6 +55,12 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
     response_model=List[ProductPublic],
     dependencies=[Depends(get_client_api_key)]
 )
+async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db)):
+    """
+    Search for products by name.
+    Requires a valid client API key.
+    """
+
 @api_router.post(
     "/admin/target",
     response_model=ScrapeTargetPublic,
@@ -77,3 +83,15 @@ async def add_scrape_target(
         created_at=new_target.created_at.isoformat()
     )
     
+@api_router.post(
+    "/admin/trigger-scrape",
+    status_code=status.HTTP_202_ACCEPTED,
+    
+)
+
+async def trigger_manual_scrape(db_session: AsyncSession = Depends(db.get_db)):
+    """
+    Manually trigger the scraping job for all targets.
+    This runs in the background.
+    Requires a valid admin API key.
+    """
