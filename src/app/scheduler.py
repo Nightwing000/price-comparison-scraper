@@ -23,3 +23,16 @@ jobstores = {
 }
 
 scheduler = AsyncIOScheduler(jobstores=jobstores)
+
+async def async_scrape_job():
+    """
+    Wrapper function to run the async scrape job.
+    Creates its own DB session.
+    """
+    print("Scheduler job: Running all scrapes...")
+    async with AsyncSessionFactory() as session:
+        try:
+            await run_all_scrapes(session)
+            print("Scheduler job: Scrapes completed.")
+        except Exception as e:
+            print(f"Scheduler job: FAILED with error: {e}")
