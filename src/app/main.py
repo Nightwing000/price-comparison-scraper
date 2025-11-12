@@ -11,6 +11,7 @@ import uvicorn
 
 from .api import api_router
 from .database import engine, Base
+from .scheduler import scheduler, start_scheduler, shutdown_scheduler
 
 
 @asynccontextmanager
@@ -23,6 +24,17 @@ async def lifespan(app: FastAPI):
     # Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Start the scheduler
+    start_scheduler()
+    print("Scheduler started.")
+    
+    yield
+    
+    # Shutdown the scheduler
+    print("Application shutdown...")
+    await shutdown_scheduler()
+    print("Scheduler shut down.")
 
 app = FastAPI(
     title="Price Comparison Scraper API",
@@ -53,3 +65,4 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=422,
         content={"detail": "Validation Error", "errors": exc.errors()},
     )
+
