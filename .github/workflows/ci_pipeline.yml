@@ -59,6 +59,9 @@ jobs:
         # We use a custom script to parse the score and fail the job
         pylint src/app --rcfile=.pylintrc | tee pylint-report.txt
         
+        # Generate JSON format report as well
+        pylint src/app --rcfile=.pylintrc --output-format=json > pylint-report.json || true
+        
         # Extract score
         SCORE=$(grep 'Your code has been rated at' pylint-report.txt | awk '{print $7}' | cut -d/ -f1)
         
@@ -80,7 +83,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: lint-report
-        path: pylint-report.txt
+        path: |
+          pylint-report.txt
+          pylint-report.json
         
   # --- 3. SECURITY Job ---
   # Runs after 'build'. Scans for vulnerabilities.
@@ -155,7 +160,44 @@ jobs:
       run: |
         # Run pytest. The configuration is in pytest.ini
         # It will automatically generate reports and fail if coverage < 75%
-        pytest
+        # Generate JUnit XML format for test results
+        pytest --junitxml=test-results.xml
+        
+    - name: Generate Test Results Summary
+      if: always()
+      run: |
+        # Create a JSON summary of test results
+        python -c "
+        import xml.etree.ElementTree as ET
+        import json
+        
+        tree = ET.parse('test-results.xml')
+        root = tree.getroot()
+        
+        summary = {
+            'total_tests': int(root.attrib.get('tests', 0)),
+            'passed': int(root.attrib.get('tests', 0)) - int(root.attrib.get('failures', 0)) - int(root.attrib.get('errors', 0)),
+            'failed': int(root.attrib.get('failures', 0)),
+            'errors': int(root.attrib.get('errors', 0)),
+            'skipped': int(root.attrib.get('skipped', 0)),
+            'time': float(root.attrib.get('time', 0))
+        }
+        
+        with open('test-summary.json', 'w') as f:
+            json.dump(summary, f, indent=2)
+        
+        print('Test Summary:')
+        print(json.dumps(summary, indent=2))
+        "
+        
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          test-results.xml
+          test-summary.json
         
     - name: Upload Coverage Report
       uses: actions/upload-artifact@v4
@@ -197,10 +239,32 @@ jobs:
         
         # Copy all downloaded reports
         mkdir deployment/reports
-        cp -r artifacts/lint-report/pylint-report.txt deployment/reports/
-        cp -r artifacts/security-report/bandit-report.json deployment/reports/
-        cp -r artifacts/coverage-report/html deployment/reports/coverage-html
-        cp -r artifacts/coverage-report/coverage.xml deployment/reports/
+        cp artifacts/lint-report/pylint-report.txt deployment/reports/ || true
+        cp artifacts/lint-report/pylint-report.json deployment/reports/ || true
+        cp artifacts/security-report/bandit-report.json deployment/reports/ || true
+        cp -r artifacts/coverage-report/html deployment/reports/coverage-html || true
+        cp artifacts/coverage-report/coverage.xml deployment/reports/ || true
+        cp artifacts/test-results/test-results.xml deployment/reports/ || true
+        cp artifacts/test-results/test-summary.json deployment/reports/ || true
+
+        # Create a manifest file
+        echo "Deployment Package Contents:" > deployment/MANIFEST.txt
+        echo "============================" >> deployment/MANIFEST.txt
+        echo "" >> deployment/MANIFEST.txt
+        echo "1. Source Code: src/" >> deployment/MANIFEST.txt
+        echo "2. Documentation: README.md" >> deployment/MANIFEST.txt
+        echo "3. Dependencies: requirements.txt" >> deployment/MANIFEST.txt
+        echo "" >> deployment/MANIFEST.txt
+        echo "4. CI/CD Reports (reports/):" >> deployment/MANIFEST.txt
+        echo "   - pylint-report.txt (Lint report - text format)" >> deployment/MANIFEST.txt
+        echo "   - pylint-report.json (Lint report - JSON format)" >> deployment/MANIFEST.txt
+        echo "   - bandit-report.json (Security scan report)" >> deployment/MANIFEST.txt
+        echo "   - coverage-html/ (Coverage report - HTML)" >> deployment/MANIFEST.txt
+        echo "   - coverage.xml (Coverage report - XML)" >> deployment/MANIFEST.txt
+        echo "   - test-results.xml (Test results - JUnit XML)" >> deployment/MANIFEST.txt
+        echo "   - test-summary.json (Test summary - JSON)" >> deployment/MANIFEST.txt
+        echo "" >> deployment/MANIFEST.txt
+        echo "Generated on: $(date)" >> deployment/MANIFEST.txt
 
         # Zip the deployment directory
         zip -r deployment.zip deployment
