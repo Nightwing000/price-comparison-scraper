@@ -83,3 +83,25 @@ async def test_full_e2e_flow(
     )
     assert response.status_code == 202
     assert response.json() == {"message": "Scraping job triggered successfully."}
+    
+    # --- 3. Verify (Mocked) Scrape Results ---
+    
+    # Check that httpx.get was called with the correct URL
+    mock_httpx_get.assert_called_with("http://e2e-test-site.com", timeout=10.0)
+    
+    # Check the database for the scrape log
+    logs = await db.get_latest_scrape_logs(db_session, 1)
+    assert len(logs) > 0
+    log = logs[0]
+    assert log.target_name == "E2E Test Site"
+    assert log.status == "success"
+    assert log.products_found == 1
+    
+    # Check the database for the new product
+    products = await db.search_products_by_name(db_session, "E2E Test Widget")
+    assert len(products) == 1
+    product = products[0]
+    assert product.name == "E2E Test Widget"
+    assert product.price == 123.45
+    assert product.url == "http://e2e-test-site.com/product/e2e-widget"
+    assert product.source_site == "E2E Test Site"
