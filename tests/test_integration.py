@@ -92,3 +92,28 @@ async def test_search_product(api_client: AsyncClient, setup_test_data):
     response = await api_client.get("/api/v1/search?q=Charlie", headers=headers)
     assert response.status_code == 200
     assert len(response.json()) == 0
+
+# --- Test Admin Endpoints ---
+
+async def test_add_scrape_target(api_client: AsyncClient, db_session: AsyncSession):
+    """Test adding a new scrape target via the admin API."""
+    headers = {"x-api-key": settings.ADMIN_API_KEY}
+    target_data = {
+        "name": "New Store",
+        "base_url": "http://newstore.com",
+        "name_selector": ".title",
+        "price_selector": ".price",
+        "url_selector": ".link"
+    }
+    
+    response = await api_client.post("/api/v1/admin/target", json=target_data, headers=headers)
+    
+    assert response.status_code == 201
+    data = response.json()
+    assert data['name'] == "New Store"
+    assert data['id'] is not None
+
+    # Verify it's in the database
+    new_target = await db_session.get(db.ScrapeTarget, data['id'])
+    assert new_target is not None
+    assert new_target.name == "New Store"
