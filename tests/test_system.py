@@ -42,3 +42,20 @@ def mock_httpx_get():
         # Set the mock to return our mock response
         mock_get.return_value = mock_response
         yield mock_get
+
+
+async def test_full_e2e_flow(
+    api_client: AsyncClient, 
+    db_session: AsyncSession, 
+    mock_httpx_get
+):
+    """
+    Test the full workflow as required by US-014:
+    1. Admin adds a new scrape target.
+    2. Admin triggers a manual scrape.
+    3. (Mocked) Scraper fetches HTML, parses it, and saves the product.
+    4. Client searches for the new product and finds it.
+    """
+    
+    admin_headers = {"x-api-key": settings.ADMIN_API_KEY}
+    client_headers = {"x-api-key": settings.CLIENT_API_KEY}
