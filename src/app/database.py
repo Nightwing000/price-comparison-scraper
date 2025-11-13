@@ -53,6 +53,19 @@ class Product(Base):
     source_site: Mapped[str] = mapped_column(String(100))
     scraped_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
+class ScrapeLog(Base):
+    """
+    Model for logging scrape job executions.
+    """
+    __tablename__ = "scrape_logs"
+    
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    target_name: Mapped[str] = mapped_column(String(100), index=True)
+    status: Mapped[str] = mapped_column(String(50)) # "success" or "failed"
+    products_found: Mapped[int] = mapped_column(Integer, default=0)
+    error_message: Mapped[Optional[str]] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
 #CRUD Operations
 async def create_scrape_target(db: AsyncSession, target: ScrapeTarget) -> ScrapeTarget:
     db.add(target)
@@ -94,5 +107,16 @@ async def search_products_by_name(db: AsyncSession, query: str) -> List[Product]
     return list(result.scalars().all())
 async def search_products_by_name(db: AsyncSession, query: str) -> List[Product]:
     stmt = select(Product).where(Product.name.ilike(f"%{query}%"))
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+async def create_scrape_log(db: AsyncSession, log: ScrapeLog) -> ScrapeLog:
+    db.add(log)
+    await db.commit()
+    await db.refresh(log)
+    return log
+
+async def get_latest_scrape_logs(db: AsyncSession, limit: int = 10) -> List[ScrapeLog]:
+    stmt = select(ScrapeLog).order_by(ScrapeLog.created_at.desc()).limit(limit)
     result = await db.execute(stmt)
     return list(result.scalars().all())
