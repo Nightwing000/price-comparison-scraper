@@ -5,7 +5,7 @@ Pytest fixtures for testing.
 import pytest
 import pytest_asyncio
 from typing import AsyncGenerator
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from src.app.main import app
@@ -50,11 +50,18 @@ async def db_engine():
 async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
     """
     Fixture for a test database session.
-    Rolls back any changes after each test.
+    Each test gets a fresh session and transaction that's rolled back after.
     """
-    async with TestingSessionLocal() as session:
-        yield session
-        await session.rollback() # Ensure clean state
+    connection = await db_engine.connect()
+    transaction = await connection.begin()
+    
+    session = AsyncSession(bind=connection, expire_on_commit=False)
+    
+    yield session
+    
+    await session.close()
+    await transaction.rollback()
+    await connection.close()
 
 @pytest_asyncio.fixture(scope="function")
 async def api_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
@@ -71,7 +78,7 @@ async def api_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, No
 
     app.dependency_overrides[get_db] = override_get_db
     
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
     
     del app.dependency_overrides[get_db]

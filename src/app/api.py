@@ -6,7 +6,7 @@ Includes security dependencies for API key authentication.
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import database as db
@@ -49,8 +49,7 @@ class ProductPublic(ProductBase):
     id: int
     scraped_at: str # Use string for JSON compatibility
 
-    class Config:
-        from_attributes = True # ORM mode
+    model_config = ConfigDict(from_attributes=True)
 
 # ScrapeTarget Schemas
 class ScrapeTargetCreate(BaseModel):
@@ -64,8 +63,7 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
     id: int
     created_at: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ScrapeLog Schemas
 class ScrapeLogPublic(BaseModel):
@@ -76,8 +74,7 @@ class ScrapeLogPublic(BaseModel):
     error_message: str | None
     created_at: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Client API Endpoints ---

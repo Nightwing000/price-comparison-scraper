@@ -64,8 +64,28 @@ class ScraperService:
     def _clean_price(self, price_str: str) -> float:
         """Utility to convert a price string to a float."""
         try:
-            # Remove symbols like $, €, ,, etc.
-            cleaned = "".join(c for c in price_str if c.isdigit() or c == '.')
+            # Remove symbols like $, €, etc., keep digits, dots, and commas
+            cleaned = "".join(c for c in price_str if c.isdigit() or c in '.,')
+            if not cleaned:
+                return 0.0
+            
+            # Determine if comma is decimal separator or thousands separator
+            # If there's a dot after the last comma, comma is thousands separator
+            # If there's no dot, or dot comes before comma, comma is decimal separator
+            if ',' in cleaned and '.' in cleaned:
+                last_comma_pos = cleaned.rfind(',')
+                last_dot_pos = cleaned.rfind('.')
+                if last_dot_pos > last_comma_pos:
+                    # Format: 1,200.50 - comma is thousands separator
+                    cleaned = cleaned.replace(',', '')
+                else:
+                    # Format: 1.200,50 - dot is thousands separator, comma is decimal
+                    cleaned = cleaned.replace('.', '').replace(',', '.')
+            elif ',' in cleaned:
+                # Only comma: assume it's decimal separator (European format)
+                cleaned = cleaned.replace(',', '.')
+            # If only dot: it's already correct format
+            
             return float(cleaned)
         except ValueError:
             return 0.0

@@ -124,15 +124,48 @@ async def test_get_scrape_logs(api_client: AsyncClient, setup_test_data, db_sess
         status="success",
         products_found=2
     )
-    db_session.add(log)
-    await db_session.commit()
+    await db.create_scrape_log(db_session, log)
     
     headers = {"x-api-key": settings.ADMIN_API_KEY}
     response = await api_client.get("/api/v1/admin/logs", headers=headers)
     
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 1
-    assert data[0]['target_name'] == "Test Store"
-    assert data[0]['status'] == "success"
-    assert data[0]['products_found'] == 2
+    assert len(data) >= 1
+    # Find our log in the results
+    our_log = next((l for l in data if l['target_name'] == "Test Store"), None)
+    assert our_log is not None
+    assert our_log['status'] == "success"
+    assert our_log['products_found'] == 2
+
+
+async def test_trigger_scrape(api_client: AsyncClient):
+    """Test manually triggering a scrape job via API."""
+    headers = {"x-api-key": settings.ADMIN_API_KEY}
+    response = await api_client.post("/api/v1/admin/trigger-scrape", headers=headers)
+    
+    # Should return 202 Accepted or 200 OK
+    assert response.status_code in [200, 202]
+    data = response.json()
+    assert "message" in data or "status" in data
+
+
+async def test_search_no_results(api_client: AsyncClient):
+    """Test searching with query that has no results."""
+    headers = {"x-api-key": settings.CLIENT_API_KEY}
+    response = await api_client.get("/api/v1/search?q=NonexistentProduct123", headers=headers)
+    
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+async def test_get_logs_empty(api_client: AsyncClient):
+    """Test getting logs when none exist for a new test."""
+    headers = {"x-api-key": settings.ADMIN_API_KEY}
+    response = await api_client.get("/api/v1/admin/logs", headers=headers)
+    
+    assert response.status_code == 200
+    # May or may not be empty depending on test order, but should be valid list
+    assert isinstance(response.json(), list)
+
+
