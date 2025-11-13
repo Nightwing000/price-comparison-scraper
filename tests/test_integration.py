@@ -18,7 +18,6 @@ async def setup_test_data(db_session: AsyncSession):
     """Seed the test database with some data."""
     # Create a target
     target = db.ScrapeTarget(
-        id=1,
         name="Test Store",
         base_url="http://test.com",
         name_selector="h1",
