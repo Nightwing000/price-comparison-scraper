@@ -69,3 +69,26 @@ async def test_invalid_admin_api_key(api_client: AsyncClient):
     assert response.status_code == 401
     assert "invalid" in response.json()['detail'].lower()
 
+# --- Test Client Endpoints ---
+
+async def test_search_product(api_client: AsyncClient, setup_test_data):
+    """Test the /search endpoint."""
+    headers = {"x-api-key": settings.CLIENT_API_KEY}
+    
+    # Search for "Alpha"
+    response = await api_client.get("/api/v1/search?q=Alpha", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['name'] == "Test Product Alpha"
+    assert data[0]['price'] == 10.00
+
+    # Search for "Product" (should match both)
+    response = await api_client.get("/api/v1/search?q=Product", headers=headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+    # Search for "Charlie" (no match)
+    response = await api_client.get("/api/v1/search?q=Charlie", headers=headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 0
