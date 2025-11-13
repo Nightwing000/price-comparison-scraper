@@ -169,3 +169,42 @@ async def test_get_logs_empty(api_client: AsyncClient):
     assert isinstance(response.json(), list)
 
 
+async def test_trigger_scrape_with_exception(api_client: AsyncClient):
+    """Test trigger scrape endpoint when scrape fails."""
+    from unittest.mock import patch, AsyncMock
+    
+    headers = {"x-api-key": settings.ADMIN_API_KEY}
+    
+    with patch('src.app.scraper.run_all_scrapes', new_callable=AsyncMock) as mock_scrape:
+        mock_scrape.side_effect = Exception("Scraping failed")
+        
+        response = await api_client.post("/api/v1/admin/trigger-scrape", headers=headers)
+        
+        # Should return 500 error
+        assert response.status_code == 500
+        assert "Failed to trigger scrape" in response.json()['detail']
+
+
+async def test_add_target_with_invalid_data(api_client: AsyncClient):
+    """Test adding target with missing required fields."""
+    headers = {"x-api-key": settings.ADMIN_API_KEY}
+    
+    # Missing required fields
+    response = await api_client.post(
+        "/api/v1/admin/target",
+        json={"name": "Incomplete"},
+        headers=headers
+    )
+    
+    assert response.status_code == 422
+
+
+async def test_search_with_special_characters(api_client: AsyncClient, setup_test_data):
+    """Test search with special characters in query."""
+    headers = {"x-api-key": settings.CLIENT_API_KEY}
+    response = await api_client.get("/api/v1/search?q=Test%20Product", headers=headers)
+    
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
