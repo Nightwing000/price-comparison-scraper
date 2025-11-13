@@ -63,8 +63,6 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
     id: int
     created_at: str
 
-    class Config:
-        from_attributes = True
     model_config = ConfigDict(from_attributes=True)
 
 # ScrapeLog Schemas
