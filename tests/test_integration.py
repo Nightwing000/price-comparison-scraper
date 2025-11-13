@@ -117,3 +117,24 @@ async def test_add_scrape_target(api_client: AsyncClient, db_session: AsyncSessi
     new_target = await db_session.get(db.ScrapeTarget, data['id'])
     assert new_target is not None
     assert new_target.name == "New Store"
+
+async def test_get_scrape_logs(api_client: AsyncClient, setup_test_data, db_session: AsyncSession):
+    """Test retrieving scrape logs."""
+    # Add a log
+    log = db.ScrapeLog(
+        target_name="Test Store",
+        status="success",
+        products_found=2
+    )
+    db_session.add(log)
+    await db_session.commit()
+    
+    headers = {"x-api-key": settings.ADMIN_API_KEY}
+    response = await api_client.get("/api/v1/admin/logs", headers=headers)
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['target_name'] == "Test Store"
+    assert data[0]['status'] == "success"
+    assert data[0]['products_found'] == 2
