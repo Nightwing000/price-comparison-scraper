@@ -56,7 +56,6 @@ async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
         yield session
         await session.rollback() # Ensure clean state
 
-
 @pytest_asyncio.fixture(scope="function")
 async def api_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """
@@ -69,3 +68,10 @@ async def api_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, No
             yield db_session
         finally:
             pass
+
+    app.dependency_overrides[get_db] = override_get_db
+    
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
+    
+    del app.dependency_overrides[get_db]

@@ -42,23 +42,6 @@ def mock_target() -> ScrapeTarget:
         url_selector="a.product-link"
     )
 
-def test_clean_price():
-    """Test the price cleaning utility function."""
-    service = ScraperService(ScrapeTarget()) # Doesn't need a real target
-    
-    assert service._clean_price("$19.99") == 19.99
-    assert service._clean_price("€25,00") == 25.00
-    assert service._clean_price("Free") == 0.0
-    assert service._clean_price("1,200.50 USD") == 1200.50
-
-def test_clean_url(mock_target: ScrapeTarget):
-    """Test the URL cleaning utility function."""
-    service = ScraperService(mock_target)
-    
-    assert service._clean_url("/product/123") == "http://mockstore.com/product/123"
-    assert service._clean_url("http://external.com/product/456") == "http://external.com/product/456"
-    assert service._clean_url("page2.html") == "page2.html"
-
 def test_parser_extracts_data(mock_target: ScrapeTarget):
     """
     Test that the parser correctly extracts data from mock HTML.
@@ -79,3 +62,20 @@ def test_parser_extracts_data(mock_target: ScrapeTarget):
     assert products[1]['name'] == "Product 2"
     assert products[1]['price'] == 25.00 # Test price cleaning
     assert products[1]['url'] == "http://mockstore.com/product/2"
+
+def test_clean_price():
+    """Test the price cleaning utility function."""
+    service = ScraperService(ScrapeTarget()) # Doesn't need a real target
+    
+    assert service._clean_price("$19.99") == 19.99
+    assert service._clean_price("€25,00") == 25.00
+    assert service._clean_price("Free") == 0.0
+    assert service._clean_price("1,200.50 USD") == 1200.50
+
+def test_clean_url(mock_target: ScrapeTarget):
+    """Test the URL cleaning utility function."""
+    service = ScraperService(mock_target)
+    
+    assert service._clean_url("/product/123") == "http://mockstore.com/product/123"
+    assert service._clean_url("http://external.com/product/456") == "http://external.com/product/456"
+    assert service._clean_url("page2.html") == "page2.html"
