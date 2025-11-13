@@ -7,6 +7,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+from unittest.mock import patch, MagicMock
 
 from src.app.core import settings
 from src.app import database as db
@@ -25,3 +26,19 @@ SYSTEM_TEST_HTML = """
 </body>
 </html>
 """
+
+
+@pytest_asyncio.fixture
+def mock_httpx_get():
+    """Mocks httpx.AsyncClient.get to return our mock HTML."""
+    # We patch 'httpx.AsyncClient.get'
+    with patch("httpx.AsyncClient.get") as mock_get:
+        # Create a mock response object
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.text = SYSTEM_TEST_HTML
+        mock_response.raise_for_status = MagicMock()
+        
+        # Set the mock to return our mock response
+        mock_get.return_value = mock_response
+        yield mock_get
