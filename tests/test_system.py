@@ -7,7 +7,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 
 from src.app.core import settings
 from src.app import database as db
@@ -31,17 +31,23 @@ SYSTEM_TEST_HTML = """
 @pytest_asyncio.fixture
 def mock_httpx_get():
     """Mocks httpx.AsyncClient.get to return our mock HTML."""
-    # We patch 'httpx.AsyncClient.get'
-    with patch("httpx.AsyncClient.get") as mock_get:
+    # We need to patch the AsyncClient class itself
+    with patch("httpx.AsyncClient") as mock_client_class:
         # Create a mock response object
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.text = SYSTEM_TEST_HTML
         mock_response.raise_for_status = MagicMock()
         
-        # Set the mock to return our mock response
-        mock_get.return_value = mock_response
-        yield mock_get
+        # Create a mock client instance
+        mock_client_instance = MagicMock()
+        mock_client_instance.get = AsyncMock(return_value=mock_response)
+        mock_client_instance.aclose = AsyncMock()
+        
+        # Set the mock class to return our mock instance
+        mock_client_class.return_value = mock_client_instance
+        
+        yield mock_client_instance.get
 
 
 async def test_full_e2e_flow(
@@ -87,7 +93,7 @@ async def test_full_e2e_flow(
     # --- 3. Verify (Mocked) Scrape Results ---
     
     # Check that httpx.get was called with the correct URL
-    mock_httpx_get.assert_called_with("http://e2e-test-site.com", timeout=10.0)
+    mock_httpx_get.assert_called_with("http://e2e-test-site.com")
     
     # Check the database for the scrape log
     logs = await db.get_latest_scrape_logs(db_session, 1)
@@ -105,3 +111,15 @@ async def test_full_e2e_flow(
     assert product.price == 123.45
     assert product.url == "http://e2e-test-site.com/product/e2e-widget"
     assert product.source_site == "E2E Test Site"
+
+    # --- 4. Client searches for the new product ---
+    response = await api_client.get(
+        "/api/v1/search?q=Widget", 
+        headers=client_headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['name'] == "E2E Test Widget"
+    assert data[0]['price'] == 123.45
