@@ -5,6 +5,8 @@ uvicorn[standard]
 # Database
 sqlalchemy
 python-dotenv
+pydantic-settings
+aiosqlite
 # Use alembic for migrations in a real project
 # alembic
 

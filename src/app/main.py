@@ -10,9 +10,9 @@ from fastapi.responses import JSONResponse
 import uvicorn
 
 from .api import api_router
-from .database import engine, Base
 from .scheduler import scheduler, start_scheduler, shutdown_scheduler
-
+from .database import engine, Base
+from .core import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,12 +42,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app = FastAPI(
-    title="Price Comparison Scraper API",
-    version="1.0",
-    lifespan=lifespan
-)
-
 # Include the main API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
@@ -66,3 +60,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": "Validation Error", "errors": exc.errors()},
     )
 
+if __name__ == "__main__":
+    # This is for running the app directly (e.g., for debugging)
+    uvicorn.run("src.app.main:app", host="127.0.0.1", port=8000, reload=True)
