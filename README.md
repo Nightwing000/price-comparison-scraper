@@ -1,4 +1,3 @@
-```
 # Price Comparison Web Scraper
 
 **Project ID:** P60  
@@ -29,7 +28,7 @@ This project was built using Python 3.10, FastAPI, SQLAlchemy (with SQLite), and
 - [@tejaswiniv27](https://github.com/tejaswiniv27)
 - [@Shriya285](https://github.com/Shriya285)
 
-## 👨‍⚖️ Faculty Supervisor
+## 👨‍⚖ Faculty Supervisor
 
 - *No valid faculty GitHub username found*
 
@@ -109,7 +108,7 @@ All API keys are passed via the `x-api-key` header.
 * **`GET /api/v1/search`**: Search for products.
     * **Query Param:** `q` (string) - The product name to search for.
     * **Success Response (200):**
-        ```json
+        json
         [
           {
             "id": 1,
@@ -119,13 +118,13 @@ All API keys are passed via the `x-api-key` header.
             "scraped_at": "2025-11-10T12:00:00Z"
           }
         ]
-        ```
+        
 
 ### Admin Endpoints (Requires `ADMIN_API_KEY`)
 
 * **`POST /api/v1/admin/target`**: Add a new scrape target.
     * **Request Body:**
-        ```json
+        json
         {
           "name": "Mock Store",
           "base_url": "http://example.com/products",
@@ -133,20 +132,20 @@ All API keys are passed via the `x-api-key` header.
           "price_selector": "span.product-price",
           "url_selector": "a.product-link"
         }
-        ```
+        
     * **Success Response (201):** The newly created target object.
 
 * **`POST /api/v1/admin/scrape`**: Trigger scraping for all targets.
     * **Success Response (200):**
-        ```json
+        json
         {
           "message": "Scraping started"
         }
-        ```
+        
 
 * **`GET /api/v1/admin/logs`**: Get the 10 most recent scrape logs.
     * **Success Response (200):**
-        ```json
+        json
         [
           {
             "id": 1,
@@ -156,7 +155,7 @@ All API keys are passed via the `x-api-key` header.
             "created_at": "2025-11-10T12:05:00Z"
           }
         ]
-        ```
+        
 
 ## 🧪 Testing
 
@@ -213,7 +212,7 @@ This project uses a 5-stage CI/CD pipeline defined in `.github/workflows/ci_pipe
         * All CI/CD reports (lint, security, coverage)
     * **This artifact is the "deployment" deliverable as per the project rubric.**
 
-## 🛠️ Development Guidelines
+## 🛠 Development Guidelines
 
 ### Branching Strategy
 - `main`: Production-ready code
@@ -248,4 +247,3 @@ This project is developed for educational purposes as part of the PES University
 **Institution:** PES University  
 **Academic Year:** 2025  
 **Semester:** 5th Sem
-```
