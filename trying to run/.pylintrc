@@ -1,0 +1,15 @@
+[MASTER]
+# Fail if score is below 7.5
+fail-under=7.5
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    C0114, # missing-module-docstring (redundant)
+    C0115, # missing-class-docstring (redundant)
+    C0116, # missing-function-docstring (redundant)
+    R0903, # too-few-public-methods
+    W0718, # broad-exception-caught (we need this for scraping)
+    E0401  # import-error (pylint can be buggy with src layout)
