@@ -59,3 +59,19 @@ async def test_full_e2e_flow(
     
     admin_headers = {"x-api-key": settings.ADMIN_API_KEY}
     client_headers = {"x-api-key": settings.CLIENT_API_KEY}
+
+    # --- 1. Admin adds a new scrape target ---
+    target_data = {
+        "name": "E2E Test Site",
+        "base_url": "http://e2e-test-site.com",
+        "name_selector": "h2.product-name",
+        "price_selector": "div.product-price",
+        "url_selector": "a.product-url"
+    }
+    
+    response = await api_client.post(
+        "/api/v1/admin/target", 
+        json=target_data, 
+        headers=admin_headers
+    )
+    assert response.status_code == 201
