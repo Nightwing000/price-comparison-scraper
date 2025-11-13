@@ -26,7 +26,7 @@ async def setup_test_data(db_session: AsyncSession):
         url_selector="a"
     )
     db_session.add(target)
-    
+
     # Create products
     p1 = db.Product(
         name="Test Product Alpha",
@@ -53,3 +53,19 @@ async def test_missing_api_key(api_client: AsyncClient, endpoint: str):
     response = await api_client.get(endpoint)
     assert response.status_code == 401
     assert "missing" in response.json()['detail'].lower()
+
+
+async def test_invalid_client_api_key(api_client: AsyncClient):
+    """Test client endpoint with an invalid key."""
+    headers = {"x-api-key": "wrong_key"}
+    response = await api_client.get("/api/v1/search?q=test", headers=headers)
+    assert response.status_code == 401
+    assert "invalid" in response.json()['detail'].lower()
+
+async def test_invalid_admin_api_key(api_client: AsyncClient):
+    """Test admin endpoint with an invalid key."""
+    headers = {"x-api-key": "wrong_key"}
+    response = await api_client.get("/api/v1/admin/logs", headers=headers)
+    assert response.status_code == 401
+    assert "invalid" in response.json()['detail'].lower()
+
