@@ -26,3 +26,30 @@ async def setup_test_data(db_session: AsyncSession):
         url_selector="a"
     )
     db_session.add(target)
+    
+    # Create products
+    p1 = db.Product(
+        name="Test Product Alpha",
+        price=10.00,
+        url="http://test.com/1",
+        source_site="Test Store"
+    )
+    p2 = db.Product(
+        name="Test Product Bravo",
+        price=20.00,
+        url="http://test.com/2",
+        source_site="Test Store"
+    )
+    db_session.add_all([p1, p2])
+    await db_session.commit()
+    
+    return {"target": target, "products": [p1, p2]}
+
+# --- Test API Security ---
+
+@pytest.mark.parametrize("endpoint", ["/api/v1/search?q=test", "/api/v1/admin/logs"])
+async def test_missing_api_key(api_client: AsyncClient, endpoint: str):
+    """Test that endpoints fail without an API key."""
+    response = await api_client.get(endpoint)
+    assert response.status_code == 401
+    assert "missing" in response.json()['detail'].lower()
