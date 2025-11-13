@@ -193,23 +193,35 @@ This project uses a 5-stage CI/CD pipeline defined in `.github/workflows/ci_pipe
     * **What:** Runs a static code analysis to check for code quality and style issues.
     * **Tools:** `pylint`
     * **Quality Gate:** The pipeline will fail if the `pylint` score is below **7.5/10**.
+    * **Artifacts:** `pylint-report.txt` (text format), `pylint-report.json` (JSON format)
 
 3.  **Security:**
     * **What:** Runs a security scanner to find common vulnerabilities in the Python code.
     * **Tools:** `bandit`
     * **Quality Gate:** The pipeline will fail if `bandit` finds any high-severity issues.
+    * **Artifacts:** `bandit-report.json` (JSON format)
 
 4.  **Test & Coverage:**
     * **What:** Runs the entire test suite (unit, integration, system) and generates a code coverage report.
     * **Tools:** `pytest`, `pytest-cov`
     * **Quality Gate:** The pipeline will fail if code coverage is below **75%**.
+    * **Artifacts:** 
+        * `test-results.xml` (JUnit XML format)
+        * `test-summary.json` (JSON summary with pass/fail counts)
+        * `coverage/html/` (HTML coverage report)
+        * `coverage.xml` (XML coverage data)
 
 5.  **Create-Artifact (Deployment):**
     * **What:** If all previous stages pass, this job creates a `deployment.zip` artifact.
     * **Contents:**
         * All source code (`src/`)
-        * The `README.md` and `requirements.txt`
-        * All CI/CD reports (lint, security, coverage)
+        * Essential files: `README.md`, `requirements.txt`
+        * **CI/CD Reports** (`reports/` folder):
+            * Lint reports (text and JSON formats)
+            * Security scan report (JSON format)
+            * Test results (JUnit XML and JSON summary)
+            * Coverage reports (HTML folder and XML file)
+        * `MANIFEST.txt` - Complete listing of package contents
     * **This artifact is the "deployment" deliverable as per the project rubric.**
 
 ## 🛠 Development Guidelines
