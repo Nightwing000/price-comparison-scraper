@@ -63,6 +63,8 @@ class ScrapeTargetPublic(ScrapeTargetCreate):
     id: int
     created_at: str
 
+    class Config:
+        from_attributes = True
     model_config = ConfigDict(from_attributes=True)
 
 # ScrapeLog Schemas
@@ -117,6 +119,7 @@ async def search_products(q: str, db_session: AsyncSession = Depends(db.get_db))
 async def add_scrape_target(
     target: ScrapeTargetCreate, 
     db_session: AsyncSession = Depends(db.get_db)
+    
 ):
     """
     Add a new website target for scraping.
@@ -145,6 +148,7 @@ async def get_scrape_logs(db_session: AsyncSession = Depends(db.get_db)):
     Get the 10 most recent scrape logs.
     Requires a valid admin API key.
     """
+    
     logs = await db.get_latest_scrape_logs(db_session, limit=10)
     
     return [
