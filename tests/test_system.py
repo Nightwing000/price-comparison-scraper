@@ -75,3 +75,11 @@ async def test_full_e2e_flow(
         headers=admin_headers
     )
     assert response.status_code == 201
+    
+    # --- 2. Admin triggers a manual scrape ---
+    response = await api_client.post(
+        "/api/v1/admin/trigger-scrape", 
+        headers=admin_headers
+    )
+    assert response.status_code == 202
+    assert response.json() == {"message": "Scraping job triggered successfully."}
