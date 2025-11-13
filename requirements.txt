@@ -5,11 +5,10 @@ uvicorn[standard]
 # Database
 sqlalchemy
 python-dotenv
+pydantic-settings
+aiosqlite
 # Use alembic for migrations in a real project
 # alembic
-
-# Scheduling
-apscheduler
 
 # Linting
 pylint
@@ -26,3 +25,6 @@ httpx
 pytest
 pytest-cov
 pytest-asyncio
+
+# Scheduling
+apscheduler

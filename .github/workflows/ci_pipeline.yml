@@ -57,7 +57,7 @@ jobs:
       run: |
         # Run pylint, tee output to a file, and check score
         # We use a custom script to parse the score and fail the job
-        pylint src/app --rcfile=pylintrc | tee pylint-report.txt
+        pylint src/app --rcfile=.pylintrc | tee pylint-report.txt
         
         # Extract score
         SCORE=$(grep 'Your code has been rated at' pylint-report.txt | awk '{print $7}' | cut -d/ -f1)
@@ -110,9 +110,19 @@ jobs:
         # -r src: recursive scan of src folder
         # -f json: format as JSON
         # -o bandit-report.json: output to file
-        # --fail-on-level high: Fail CI if high-severity issue found
-        bandit -r src -f json -o bandit-report.json --fail-on-level high
+        # -ll: Only show issues of severity level LOW or higher
+        # Exit with error if any issues found
+        bandit -r src -f json -o bandit-report.json -ll
         
+        # Check if high or medium severity issues found
+        if grep -q '"issue_severity": "HIGH"' bandit-report.json; then
+          echo "::error::High severity security issues found!"
+          exit 1
+        fi
+        if grep -q '"issue_severity": "MEDIUM"' bandit-report.json; then
+          echo "::error::Medium severity security issues found!"
+          exit 1
+        fi
     - name: Upload Security Report
       uses: actions/upload-artifact@v4
       with:
@@ -190,7 +200,6 @@ jobs:
         cp -r artifacts/lint-report/pylint-report.txt deployment/reports/
         cp -r artifacts/security-report/bandit-report.json deployment/reports/
         cp -r artifacts/coverage-report/html deployment/reports/coverage-html
-        cp -r artifactsfiletype: 
         cp -r artifacts/coverage-report/coverage.xml deployment/reports/
 
         # Zip the deployment directory
@@ -200,4 +209,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: deployment-package
-        path: deployment.zips
+        path: deployment.zip
