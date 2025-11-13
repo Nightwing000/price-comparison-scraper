@@ -41,15 +41,18 @@ This project was built using Python 3.10, FastAPI, SQLAlchemy (with SQLite), and
     * `database.py`: SQLAlchemy setup, all DB models, and CRUD functions.
     * `scraper.py`: The core web scraping logic and HTML parsers.
     * `scheduler.py`: The `APScheduler` logic for automated scraping jobs.
-* `tests/`: Contains all tests.
+* `tests/`: Contains all tests organized by type.
     * `conftest.py`: Pytest fixtures (e.g., test database, API client).
-    * `test_unit.py`: Unit tests (e.g., testing parser logic with mock HTML).
-    * `test_integration.py`: Integration tests (e.g., testing API endpoints).
-    * `test_system.py`: End-to-end system tests.
-    * `test_database.py`: Database layer tests.
-    * `test_scraper.py`: Scraper component tests.
-    * `test_scheduler.py`: Scheduler component tests.
-    * `test_main.py`: Application entry point tests.
+    * `unit/`: Unit tests for individual components.
+        * `test_unit.py`: Core parser and utility function tests.
+        * `test_database.py`: Database layer tests.
+        * `test_scraper.py`: Scraper component tests.
+        * `test_scheduler.py`: Scheduler component tests.
+        * `test_main.py`: Application entry point tests.
+    * `integration/`: Integration tests for API endpoints and component interactions.
+        * `test_integration.py`: API endpoint integration tests.
+    * `system/`: End-to-end system tests for complete user workflows.
+        * `test_system.py`: Full E2E user journey tests.
 * `.github/workflows/`: Contains the CI/CD pipeline configuration.
 * `.pylintrc`: Configuration for the Pylint linter.
 * `pytest.ini`: Configuration for Pytest and the `pytest-cov` coverage tool.
@@ -63,21 +66,21 @@ This project was built using Python 3.10, FastAPI, SQLAlchemy (with SQLite), and
 ### Installation
 
 1.  **Clone the repository:**
-    bash
+    ```bash
     git clone https://github.com/pestechnology/PESU_EC_CSE_D_P60_Web_Scraper_for_Price_Comparison_GKIsh.git
     cd PESU_EC_CSE_D_P60_Web_Scraper_for_Price_Comparison_GKIsh
-    
+    ```
 
 2.  **Create a virtual environment and install dependencies:**
-    bash
+    ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows: venv\Scripts\activate
     pip install -r requirements.txt
-    
+    ```
 
 3.  **Run the application:**
     The application uses environment variables for configuration (see `src/app/core.py`). You can set them in your terminal:
-    bash
+    ```bash
     # Linux/Mac
     export ADMIN_API_KEY="my-secret-key"
     export CLIENT_API_KEY="my-client-key"
@@ -90,7 +93,7 @@ This project was built using Python 3.10, FastAPI, SQLAlchemy (with SQLite), and
 
     # Run the server
     uvicorn src.app.main:app --reload
-    
+    ```
 
 4.  **Access the API:**
     The API will be running at `http://127.0.0.1:8000`.
@@ -158,18 +161,23 @@ All API keys are passed via the `x-api-key` header.
 
 Run the test suite with coverage:
 
-bash
+```bash
 # Run all tests with coverage report
 pytest tests/ -v
 
 # Run tests with coverage threshold check (75% minimum)
 pytest tests/ --cov=src/app --cov-report=html --cov-report=term
 
-# Run specific test files
-pytest tests/test_unit.py -v
-pytest tests/test_integration.py -v
-pytest tests/test_system.py -v
+# Run specific test categories
+pytest tests/unit/ -v           # Unit tests only
+pytest tests/integration/ -v    # Integration tests only
+pytest tests/system/ -v         # System tests only
 
+# Run specific test files
+pytest tests/unit/test_scraper.py -v
+pytest tests/integration/test_integration.py -v
+pytest tests/system/test_system.py -v
+```
 
 Current test coverage: **91.49%** (exceeds 75% requirement)
 
