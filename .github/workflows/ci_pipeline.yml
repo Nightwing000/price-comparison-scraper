@@ -6,7 +6,7 @@ name: Python CI/CD Pipeline
 # Triggers the workflow on pushes to main and all pull requests
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, feature/enhance-ci-artifacts ]
   pull_request:
     branches: [ main, develop ]
 
@@ -161,6 +161,16 @@ jobs:
         # Run pytest. The configuration is in pytest.ini
         # It will automatically generate reports and fail if coverage < 75%
         # Generate JUnit XML format for test results
+        # Continue even if pytest fails to ensure we capture results
+        pytest --junitxml=test-results.xml || true
+        
+        # Check if tests actually ran
+        if [ ! -f "test-results.xml" ]; then
+          echo "ERROR: test-results.xml was not generated!"
+          exit 1
+        fi
+        
+        # Now check if coverage passed (re-run to get exit code)
         pytest --junitxml=test-results.xml
         
     - name: Generate Test Results Summary
@@ -170,18 +180,49 @@ jobs:
         python -c "
         import xml.etree.ElementTree as ET
         import json
+        import os
         
-        tree = ET.parse('test-results.xml')
-        root = tree.getroot()
-        
-        summary = {
-            'total_tests': int(root.attrib.get('tests', 0)),
-            'passed': int(root.attrib.get('tests', 0)) - int(root.attrib.get('failures', 0)) - int(root.attrib.get('errors', 0)),
-            'failed': int(root.attrib.get('failures', 0)),
-            'errors': int(root.attrib.get('errors', 0)),
-            'skipped': int(root.attrib.get('skipped', 0)),
-            'time': float(root.attrib.get('time', 0))
-        }
+        # Check if test-results.xml exists
+        if not os.path.exists('test-results.xml'):
+            print('ERROR: test-results.xml not found!')
+            summary = {
+                'total_tests': 0,
+                'passed': 0,
+                'failed': 0,
+                'errors': 0,
+                'skipped': 0,
+                'time': 0.0,
+                'error': 'test-results.xml not found'
+            }
+        else:
+            try:
+                tree = ET.parse('test-results.xml')
+                root = tree.getroot()
+                
+                # Get testsuite element (pytest JUnit format)
+                testsuite = root if root.tag == 'testsuite' else root.find('testsuite')
+                if testsuite is None:
+                    testsuite = root
+                
+                summary = {
+                    'total_tests': int(testsuite.attrib.get('tests', 0)),
+                    'passed': int(testsuite.attrib.get('tests', 0)) - int(testsuite.attrib.get('failures', 0)) - int(testsuite.attrib.get('errors', 0)),
+                    'failed': int(testsuite.attrib.get('failures', 0)),
+                    'errors': int(testsuite.attrib.get('errors', 0)),
+                    'skipped': int(testsuite.attrib.get('skipped', 0)),
+                    'time': float(testsuite.attrib.get('time', 0))
+                }
+            except Exception as e:
+                print(f'ERROR parsing test-results.xml: {e}')
+                summary = {
+                    'total_tests': 0,
+                    'passed': 0,
+                    'failed': 0,
+                    'errors': 0,
+                    'skipped': 0,
+                    'time': 0.0,
+                    'error': str(e)
+                }
         
         with open('test-summary.json', 'w') as f:
             json.dump(summary, f, indent=2)
