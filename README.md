@@ -1,6 +1,6 @@
 # Price Comparison Web Scraper
 
-> **Note:** This repo is a mirror of a team project originally built in a PES University course repository ([pestechnology/PESU_EC_CSE_D_P60_Web_Scraper_for_Price_Comparison_GKIsh](https://github.com/pestechnology/PESU_EC_CSE_D_P60_Web_Scraper_for_Price_Comparison_GKIsh)), reposted here with teammates' permission for portfolio purposes. All contributors are credited below.
+> **Note:** This repo is a mirror of a team project originally built in a PES University course repository ([pestechnology/PESU_EC_CSE_D_P60_Web_Scraper_for_Price_Comparison_GKIsh](https://github.com/pestechnology/PESU_EC_CSE_D_P60_Web_Scraper_for_Price_Comparison_GKIsh)), reposted here for portfolio purposes. All contributors are credited below.
 
 **Project ID:** P60  
 **Course:** UE23CS341A  
